@@ -1229,7 +1229,8 @@ async function openNewsPopup(item) {
 
       const hasLine = setSocial('announcementLine', contact.line);
       const hasFacebook = setSocial('announcementFacebook', contact.facebook);
-      if (socials) socials.hidden = !(hasLine || hasFacebook);
+      const hasYoutube = setSocial('announcementYoutube', contact.youtube);
+      if (socials) socials.hidden = !(hasLine || hasFacebook || hasYoutube);
     } catch (error) {
       console.error('loadAnnouncement error:', error);
       if (announcement) {
