@@ -1227,9 +1227,23 @@ async function openNewsPopup(item) {
 
       enableAnnouncementLink(announcement, announcementUrl);
 
-      const hasLine = setSocial('announcementLine', contact.line);
-      const hasFacebook = setSocial('announcementFacebook', contact.facebook);
-      const hasYoutube = setSocial('announcementYoutube', contact.youtube);
+      // aboutPages reads N6:N8 from this site's own setting sheet.
+      // homefast on this site may omit N8, so refresh only the social links.
+      let socialContact = contact;
+      try {
+        const socialUrl = new URL(API_URL);
+        socialUrl.searchParams.set('mode', 'aboutPages');
+        const socialResponse = await fetch(socialUrl.toString(), { cache: 'no-store' });
+        if (!socialResponse.ok) throw new Error(`HTTP ${socialResponse.status}`);
+        const socialResult = await socialResponse.json();
+        if (!socialResult || socialResult.success === false) throw new Error(socialResult?.message || 'โหลดช่องทางสื่อสังคมออนไลน์ไม่สำเร็จ');
+        socialContact = socialResult.contact || contact;
+      } catch (socialError) {
+        console.warn('announcement social fallback:', socialError);
+      }
+      const hasLine = setSocial('announcementLine', socialContact.line);
+      const hasFacebook = setSocial('announcementFacebook', socialContact.facebook);
+      const hasYoutube = setSocial('announcementYoutube', socialContact.youtube);
       if (socials) socials.hidden = !(hasLine || hasFacebook || hasYoutube);
     } catch (error) {
       console.error('loadAnnouncement error:', error);
